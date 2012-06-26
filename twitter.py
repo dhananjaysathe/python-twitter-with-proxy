@@ -20,7 +20,6 @@ __author__ = 'python-twitter@googlegroups.com'
 __version__ = '0.8.2'
 
 
-import base64
 import calendar
 import datetime
 import httplib
@@ -30,7 +29,6 @@ import sys
 import tempfile
 import textwrap
 import time
-import calendar
 import urllib
 import urllib2
 import urlparse
@@ -40,27 +38,43 @@ import StringIO
 try:
   # Python >= 2.6
   import json as simplejson
+#make pyflakes happy
+  simplejson
 except ImportError:
   try:
     # Python < 2.6
     import simplejson
+#make pyflakes happy
+    simplejson
   except ImportError:
     try:
       # Google App Engine
       from django.utils import simplejson
+#make pyflakes happy
+      simplejson
     except ImportError:
       raise ImportError, "Unable to load a json library"
 
 # parse_qsl moved to urlparse module in v2.6
 try:
   from urlparse import parse_qsl, parse_qs
+#make pyflakes happy
+  parse_qsl
+  parse_qs
 except ImportError:
   from cgi import parse_qsl, parse_qs
+#make pyflakes happy
+  parse_qsl
+  parse_qs
 
 try:
   from hashlib import md5
+#make pyflakes happy
+  md5
 except ImportError:
   from md5 import md5
+#make pyflakes happy
+  md5
 
 import oauth2 as oauth
 
@@ -2172,7 +2186,8 @@ class Api(object):
                shortner=None,
                base_url=None,
                use_gzip_compression=False,
-               debugHTTP=False):
+               debugHTTP=False,
+			   proxy=None):
     '''Instantiate a new twitter.Api object.
 
     Args:
@@ -2213,6 +2228,7 @@ class Api(object):
     self._use_gzip       = use_gzip_compression
     self._debugHTTP      = debugHTTP
     self._oauth_consumer = None
+    self._proxy          = proxy
 
     self._InitializeRequestHeaders(request_headers)
     self._InitializeUserAgent()
@@ -3749,10 +3765,12 @@ class Api(object):
     else:
       _debug = 0
 
+    proxy = self._urllib.ProxyHandler(self._proxy)
     http_handler  = self._urllib.HTTPHandler(debuglevel=_debug)
     https_handler = self._urllib.HTTPSHandler(debuglevel=_debug)
 
-    opener = self._urllib.OpenerDirector()
+    #opener = self._urllib.OpenerDirector()
+    opener = self._urllib.build_opener(proxy)
     opener.add_handler(http_handler)
     opener.add_handler(https_handler)
 
@@ -3776,7 +3794,7 @@ class Api(object):
 
       req.sign_request(self._signature_method_hmac_sha1, self._oauth_consumer, self._oauth_token)
 
-      headers = req.to_header()
+      req.to_header()
 
       if http_method == "POST":
         encoded_post_data = req.to_postdata()
@@ -3875,7 +3893,7 @@ class _FileCache(object):
              os.getenv('USERNAME') or \
              os.getlogin() or \
              'nobody'
-    except (IOError, OSError), e:
+    except (IOError, OSError):
       return 'nobody'
 
   def _GetTmpCachePath(self):
