@@ -44,11 +44,13 @@ except ImportError:
   try:
     # Python < 2.6
     import simplejson
+#make pyflakes happy
     simplejson
   except ImportError:
     try:
       # Google App Engine
       from django.utils import simplejson
+#make pyflakes happy
       simplejson
     except ImportError:
       raise ImportError, "Unable to load a json library"
@@ -3763,10 +3765,12 @@ class Api(object):
     else:
       _debug = 0
 
+    proxy = self._urllib.ProxyHandler(self._proxy)
     http_handler  = self._urllib.HTTPHandler(debuglevel=_debug)
     https_handler = self._urllib.HTTPSHandler(debuglevel=_debug)
 
-    opener = self._urllib.OpenerDirector()
+    #opener = self._urllib.OpenerDirector()
+    opener = self._urllib.build_opener(proxy)
     opener.add_handler(http_handler)
     opener.add_handler(https_handler)
 
